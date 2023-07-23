@@ -5,53 +5,52 @@ header("content-type: application/json; charset=UTF-8");
 
 //api ทำงานกับ ไฟล์ databaseconnect.php และ user.php
 include_once "./../../databaseconnect.php";
-include_once "./../../model/user.php";
+include_once "./../../model/room2.php";
  
 $databaseConnect = new DatabaseConnect();
 $connDB = $databaseConnect->getConnection();
-$user = new User($connDB);
-
-//สร้างตัวแปรเก็บค่าของข้อมูลที่ส่งมาซึ่งเป็น JSON ที่ทำการ decode แล้ว
-$data = json_decode(file_get_contents("php://input"));
-
-//เอาข้อมูลที่ถูก decode ไปเก็บในตัวแปร
-$user->userName = $data ->userName;
-$user->userPassword = $data ->userPassword;
+ 
+$room2 = new Room2($connDB);
 
 //เรียกใช้ฟังก์ชันตามวัตถุประสงค์ของ API ตัวนี้
-$stmt = $user->loginUser();
+$stmt = $room2->getAllTempRoom2();
 
 // นับแถวเพื่อดูว่าได้ข้อมูลมาไหม
 $numrow = $stmt->rowCount();
 
 //สร้างตัวแปรมาเก็บข้อมูลที่ได้จากการเรีียกใช้ฟังก์ชัน เพื่อส่งกลับไปยังส่วนที่เรียกใช้ API
-$user_arr = array();
+$room2_arr = array();
 
 //ตรวจสอบผลและส่งกลับไปยังส่วนที่เรียกใช้ API
 if($numrow > 0){
     //แปลว่ามีข้อมูล
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         extract($row);
-        $user_item = array(
+        $room2_item = array(
             "message" => "1",
-            "userId" => $userId,
-            "userFullname" => $userFullname
+            "id" => $id,
+            "airValue1" => $airValue1,
+            "airValue2" => $airValue2,
+            "airValue3" => $airValue3,
+            "roomDate" => $roomDate,
+            "roomTime" => $roomTime
+
         );
  
-        array_push($user_arr, $user_item);
+        array_push($room2_arr, $room2_item);
     }
 
 }else{
     //ไม่มีข้อมูล
-    $user_item = array(
+    $room2_item = array(
         "massage" => "0"
     );
  
-    array_push($user_arr, $user_item);
+    array_push($room2_arr, $room2_item);
 
 }
 
 //คำสั่งจักการข้อมูลให้เป็น JSON เพื่อส่งกลับ
 http_response_code(200);
-echo json_encode($user_arr);
+echo json_encode($room2_arr);
 
